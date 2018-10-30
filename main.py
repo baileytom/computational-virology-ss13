@@ -9,7 +9,7 @@ class Symptom(object):
 		self.stage_speed = stage_speed
 		self.transmission = transmission
 		self.level = level
-   
+
 class Disease(object):
 	def __init__(self, symptoms):
 		self.symptoms = symptoms
@@ -17,11 +17,11 @@ class Disease(object):
 		self.resistance = sum(s.resistance for s in self.symptoms)
 		self.stage_speed = sum(s.stage_speed for s in self.symptoms)
 		self.transmission = sum(s.transmission for s in self.symptoms)
-		
+
 	def get_symptoms(self):
 		return str.join(', ', list(map(lambda i: i.name, self.symptoms)))
 
-symptoms = list(map(lambda i: Symptom(i[0], i[1], i[2], i[3], i[4], i[5]),  
+symptoms = list(map(lambda i: Symptom(i[0], i[1], i[2], i[3], i[4], i[5]),
   [["Acute Respiratory Distress Syndrome",-2,0,-1,-2,7],
   ["Alopecia",0,1,2,2,4],
   ["Alkali perspiration",2,-2,-2,-2,7],
@@ -77,14 +77,16 @@ while True:
 			if s.name.lower() == selection.lower():
 				if s not in required_symptoms:
 					required_symptoms.append(s)
-			
+
 print("Enter the minimum stats for your disease:")
 stealth_min = int(input("Stealth: "))
 resistance_min = int(input("Resistance: "))
 stage_speed_min = int(input("Stage speed: "))
 transmission_min = int(input("Transmission: "))
 
-airborne = input("Filter for airborne? y/n").startswith("y")
+max_symptom_level = int(input("Max symptom level: "))
+
+airborne = input("Filter for airborne? y/n ").startswith("y")
 
 sorting = input("Sorting? y/n ").startswith("y")
 sort_key = None
@@ -101,13 +103,13 @@ if sorting:
 		transmission_sort: "transmission"
 	}
 	sort_key = operator.attrgetter(sort_dict[4], sort_dict[3], sort_dict[2], sort_dict[1])
-	
+
 # Custom key for spontaneous combustion
 combustible_key = lambda x: x.stage_speed - x.stealth
 
 matches = []
 for length in range(1, 7):
-	for i in itertools.combinations(symptoms,length-len(required_symptoms)):
+	for i in itertools.combinations(filter(lambda i: i.level < max_symptom_level, symptoms),length-len(required_symptoms)):
 		d = Disease(required_symptoms + list(i))
 		transmission_level = d.transmission - len(d.symptoms)
 		if airborne and transmission_level < 5:
@@ -130,4 +132,3 @@ for d in matches:
 	print("Stage speed: {}".format(d.stage_speed))
 	print("Transmission: {}".format(d.transmission))
 print("__________________________________")
-    
